@@ -1,0 +1,19 @@
+type Actor {
+  id: ID!
+  name: String!
+  birth_year: Int
+  characters: [Character!]!
+  created_at: String!
+  updated_at: String!
+}
+
+extend type Query {
+  actors(limit: Int = 10): [Actor!]!
+  actor(id: ID!): Actor
+}
+
+extend type Mutation {
+  createActor(name: String!, birth_year: Int): Actor!
+  updateActor(id: ID!, name: String, birth_year: Int): Actor!
+  deleteActor(id: ID!): DeleteResponse!
+}

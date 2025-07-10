@@ -1,0 +1,29 @@
+type Character {
+  id: ID!
+  name: String!
+  movie_name: String!
+  movie_year: Int
+  actor: Actor!
+  created_at: String!
+  updated_at: String!
+}
+
+type DeleteResponse {
+  success: Boolean!
+  message: String
+}
+
+extend type Query {
+  characters(actorId: ID): [Character!]!
+  character(id: ID!): Character
+}
+
+extend type Mutation {
+  addCharacter(
+    name: String!
+    actorId: ID!
+    movie_name: String!
+    movie_year: Int
+  ): Character!
+  removeCharacter(id: ID!): DeleteResponse!
+}
