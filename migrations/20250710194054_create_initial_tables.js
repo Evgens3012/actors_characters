@@ -21,6 +21,7 @@ exports.up = async function(knex) {
     table.string('movie_name', 255).notNullable();
     table.integer('movie_year');
     table.text('character_description');
+    table.integer('actor_id').unsigned().references('id').inTable('actors').onDelete('CASCADE');
     
     // Внешний ключ с каскадным удалением
     table.integer('actor_id').unsigned().notNullable()

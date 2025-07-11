@@ -1,45 +1,37 @@
 require('dotenv').config();
 const { ApolloService } = require('moleculer-apollo-server');
+const { typeDefs, resolvers } = require('./src/graphql');
 
 module.exports = {
-  // Настройки пространства имен (для изоляции сервисов)
+  // Базовые настройки
   namespace: 'actors-characters',
-  
-  // Уникальный ID ноды
   nodeID: `api-server-${process.pid}`,
   
-  // Логгирование
+  // Настройки логгирования
   logger: {
     type: 'Console',
     options: {
       colors: true,
-      level: 'info',
+      level: process.env.LOG_LEVEL || 'info',
       formatter: 'full'
     }
   },
-  
-  // Транспорт для межсервисного взаимодействия
-  transporter: 'TCP',
-  
-  // API Gateway (если нужно REST API)
+
+  // Транспорт
+  transporter: process.env.TRANSPORTER || 'TCP',
+
+  // HTTP Gateway
   apiGateway: {
-    port: 3000,
+    port: process.env.PORT || 3000,
     ip: '0.0.0.0',
-    routes: [
-      {
-        path: '/api',
-        aliases: {
-          // Можно добавить REST-эндпоинты
-        }
-      }
-    ]
+    cors: true
   },
-  
-  // Настройки GraphQL Apollo Server
+
+  // GraphQL Apollo Server
   services: [
     ApolloService({
-      typeDefs: require('./src/graphql').typeDefs,
-      resolvers: require('./src/graphql').resolvers,
+      typeDefs,
+      resolvers,
       routeOptions: {
         path: '/graphql',
         cors: true,
@@ -48,32 +40,29 @@ module.exports = {
       serverOptions: {
         playground: process.env.NODE_ENV !== 'production',
         introspection: true,
-        uploads: false, // Отключаем загрузку файлов (если не используется)
-        context: (ctx) => ({
-          broker: ctx.broker,
-          auth: ctx.meta.auth
+        context: ({ meta }) => ({ 
+          auth: meta.auth 
         })
       }
     }),
     require('./src/services/actor.service'),
     require('./src/services/character.service')
   ],
-  
-  // Настройки трейсинга (для отладки)
+
+  // Настройки для разработки
   tracing: {
-    enabled: true,
+    enabled: process.env.NODE_ENV === 'development',
     exporter: {
       type: 'Console',
       options: {
-        colors: true,
-        width: 100
+        colors: true
       }
     }
   },
-  
-  // Настройки метрик
+
+  // Метрики (включены только в production)
   metrics: {
-    enabled: true,
+    enabled: process.env.NODE_ENV === 'production',
     reporter: {
       type: 'Prometheus',
       options: {
@@ -82,21 +71,10 @@ module.exports = {
       }
     }
   },
-  
-  // Обработчик ошибок
-  errorHandler: 'Console',
-  
+
   // Хуки жизненного цикла
-  created(broker) {
-    broker.logger.info('Broker created');
-  },
-  
   started(broker) {
-    broker.logger.info('Services started');
-    broker.logger.info(`GraphQL endpoint: http://localhost:3000/graphql`);
-  },
-  
-  stopped(broker) {
-    broker.logger.info('Broker stopped');
+    broker.logger.info(`Server started at http://localhost:${process.env.PORT || 3000}`);
+    broker.logger.info(`GraphQL Playground: http://localhost:${process.env.PORT || 3000}/graphql`);
   }
 };

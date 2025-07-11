@@ -13,9 +13,17 @@ module.exports = {
     // Создать нового актера
     createActor: async (_, { name, birth_year }, { broker }) => {
       return await broker.call("actor.create", { name, birth_year });
+    },
+    // Обновить данные актера 
+    updateActor: async (_, { id, name, birth_year }, { broker }) => {
+      return await broker.call("actor.update", { id, name, birth_year });
+    },
+    // Удалить актера 
+    deleteActor: async (_, { id }, { broker }) => {
+      return await broker.call("actor.remove", { id });
     }
   },
-  // Как получать персонажей для каждого актера
+  // Получить персонажей для каждого актера
   Actor: {
     characters: async (parent, _, { broker }) => {
       return await broker.call("character.findByActor", { 
